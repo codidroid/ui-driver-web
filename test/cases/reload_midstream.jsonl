@@ -1,4 +1,0 @@
-{ "step": "send prompt", "do": { "kind": "sendPrompt", "params": { "text": "stream for a while" } } }
-{ "step": "wait streaming", "assert": { "kind": "waitForTurn", "params": { "status": "streaming" } } }
-{ "step": "reload", "do": { "kind": "evaluate", "params": { "script": "() => location.reload()" } } }
-{ "step": "turn ends", "assert": { "kind": "waitForTurn", "params": { "status": "done", "timeout_ms": 60000 } } }

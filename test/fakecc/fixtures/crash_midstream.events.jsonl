@@ -1,3 +1,0 @@
-{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Starting..."}]}}}
-{"delay_ms":10}
-{"exit":137,"stderr":"FakeCC: simulated crash\n"}

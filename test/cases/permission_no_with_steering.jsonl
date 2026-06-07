@@ -1,4 +1,0 @@
-{ "step": "send prompt",     "do":     { "kind": "sendPrompt",          "params": { "text": "run rm -rf /tmp/x" } } }
-{ "step": "awaiting perm",   "assert": { "kind": "waitForTurn",         "params": { "status": "awaiting_permission" } } }
-{ "step": "deny + steer",    "do":     { "kind": "respondToPermission", "params": { "decision": "no", "steering": "use ls instead" } } }
-{ "step": "turn ends",       "assert": { "kind": "waitForTurn",         "params": { "status": "done" } } }

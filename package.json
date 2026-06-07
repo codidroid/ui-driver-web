@@ -2,15 +2,14 @@
   "name": "ui-driver-web",
   "version": "0.1.0",
   "private": true,
-  "description": "JSONL-case-driven Playwright runner for any web project. Standalone — drop alongside your repo and point E2E_BACKEND_BIN at your built server.",
+  "description": "JSONL-case-driven Playwright runner for any web project. Standalone — pass --backend-bin, --cases-root, --commands, --fakecc-bin, etc. on the command line.",
   "scripts": {
     "build": "tsc -b",
     "server": "tsx src/bin.ts",
     "runner": "tsx test/runner.ts",
     "runner:all": "node test/run-all.js",
-    "runner:smoke": "node test/run-all.js --case smoke_text_only --browser chromium",
     "runner:chromium": "node test/run-all.js --browser chromium",
-    "runner:real": "node test/run-all.js --cases-dir cases-realcc --cc-mode real --browser chromium",
+    "runner:firefox": "node test/run-all.js --browser firefox",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {

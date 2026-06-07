@@ -1,3 +1,0 @@
-{ "step": "send prompt", "do":     { "kind": "sendPrompt", "params": { "text": "go" } } }
-{ "step": "error",       "assert": { "kind": "waitForTurn", "params": { "status": "error" } } }
-{ "step": "restart",     "do":     { "kind": "click",      "params": { "selector": "[data-test=restart-session]" } } }

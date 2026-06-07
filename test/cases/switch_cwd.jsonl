@@ -1,2 +1,0 @@
-{ "step": "click chip",   "do":     { "kind": "click",         "params": { "selector": "button[title*='/']" } } }
-{ "step": "new dir",      "assert": { "kind": "waitForSelector","params": { "selector": "textarea" } } }

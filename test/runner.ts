@@ -2,8 +2,10 @@
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { spawn } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { Session } from '../src/session';
 import { replayCase } from '../src/replay';
+import { registerCommands } from '../src/commands/registry';
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -31,39 +33,57 @@ async function main() {
   const reportPath = arg('report') ?? '/tmp/report.json';
   const browser = (arg('browser') ?? 'chromium') as 'chromium' | 'firefox';
   const ccMode = arg('cc-mode') ?? 'fake';
-  const fixture = arg('fixture') ?? path.resolve(__dirname, 'fakecc/fixtures/simple_text.events.jsonl');
+  const fixture = arg('fixture');
   if (!casePath) { console.error('--case required'); process.exit(2); }
 
-  // The driver is now standalone — the consumer (a web project under
-  // test) tells us where its backend lives via E2E_BACKEND_BIN, and how
-  // to invoke it via E2E_BACKEND_CMD (default 'node'). FakeCC ships with
-  // the driver itself, so it's resolved relative to this file.
-  const backendBin = arg('backend-bin') ?? process.env.E2E_BACKEND_BIN;
+  // The driver is standalone — the consumer (a web project under test)
+  // declares where its backend lives via CLI flags, and provides any
+  // app-specific commands via --commands and any subprocess-mock binary
+  // via --fakecc-bin. Env vars are deliberately not consulted: they leak
+  // into every child process and into /proc/<pid>/environ, where any
+  // other process running as the same user can read them. CLI flags only
+  // live in this one /proc/<pid>/cmdline.
+  const backendBin = arg('backend-bin');
   if (!backendBin) {
-    console.error('--backend-bin (or E2E_BACKEND_BIN env) is required: path to the backend executable to spawn');
+    console.error('--backend-bin is required: path to the backend executable to spawn');
     process.exit(2);
   }
-  const backendCmd = process.env.E2E_BACKEND_CMD ?? 'node';
-  const fakeccBin = path.resolve(__dirname, 'fakecc/fakecc.js');
-  const backendPort = Number(process.env.E2E_BACKEND_PORT ?? 4100);
+  const backendCmd = arg('backend-cmd') ?? 'node';
+  const backendPort = Number(arg('backend-port') ?? '4100');
+  const backendLogLevel = arg('backend-log-level') ?? 'warn';
 
+  // Optional consumer-supplied commands module. Dynamically imported so
+  // the driver itself stays free of any consumer dependency. Picks up
+  // default export OR a named `commands` export.
+  const commandsModule = arg('commands');
+  if (commandsModule) {
+    const url = pathToFileURL(path.resolve(commandsModule)).href;
+    const mod = await import(url);
+    const extra = (mod.default ?? mod.commands ?? mod) as Record<string, unknown>;
+    registerCommands(extra);
+  }
+
+  // FakeCC binary — consumer-supplied via --fakecc-bin. Only required
+  // when --cc-mode is 'fake'.
+  const fakeccBin = arg('fakecc-bin');
+  if (ccMode === 'fake' && !fakeccBin) {
+    console.error('--fakecc-bin is required when --cc-mode=fake');
+    process.exit(2);
+  }
+
+  // The backend itself reads PORT and LOG_LEVEL from env (its own
+  // convention); we set them on the spawned child, not on ourselves.
   const backendEnv: NodeJS.ProcessEnv = {
     ...process.env,
     PORT: String(backendPort),
-    LOG_LEVEL: process.env.E2E_LOG_LEVEL ?? 'warn',
+    LOG_LEVEL: backendLogLevel,
   };
   if (ccMode === 'fake') {
-    // FakeCC has #!/usr/bin/env node and is chmod +x, so spawn(ccBin, args) works.
-    backendEnv.CC_BIN = fakeccBin;
-    backendEnv.FAKECC_FIXTURE = path.resolve(fixture);
+    backendEnv.CC_BIN = fakeccBin!;
+    if (fixture) backendEnv.FAKECC_FIXTURE = path.resolve(fixture);
   }
 
-  // Special case: when E2E_BACKEND_CMD points directly at the binary
-  // (e.g. a compiled native server, or a wrapper script) we let the caller
-  // pass an empty bin and just exec the command. Default keeps the
-  // node script.js shape.
-  const spawnArgs = backendCmd === 'node' ? [backendBin] : [backendBin];
-  const be = spawn(backendCmd, spawnArgs, { env: backendEnv, stdio: ['ignore', 'pipe', 'pipe'] });
+  const be = spawn(backendCmd, [backendBin], { env: backendEnv, stdio: ['ignore', 'pipe', 'pipe'] });
   let beStderr = '';
   let beStdout = '';
   be.stdout?.on('data', (d) => { beStdout += d.toString('utf8'); });

@@ -1,3 +1,0 @@
-{ "step": "switch model", "do":     { "kind": "setModel",      "params": { "name": "opus" } } }
-{ "step": "send prompt",  "do":     { "kind": "sendPrompt",    "params": { "text": "ping" } } }
-{ "step": "turn ends",    "assert": { "kind": "waitForTurn",   "params": { "status": "done" } } }

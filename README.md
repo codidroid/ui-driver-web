@@ -1,9 +1,9 @@
 # ui-driver-web
 
 A standalone JSONL-case-driven Playwright runner for any browser-facing
-web project. Originally extracted from `codidroid-webui`'s test harness;
-intended to be dropped next to any repo that exposes an HTTP backend and
-a web UI.
+web project. The runner is fully consumer-agnostic — it ships with no
+project-specific commands, scenarios, or subprocess mocks. The consumer
+provides those via CLI flags.
 
 ## What it does
 
@@ -11,9 +11,15 @@ a web UI.
 - Boots a Playwright session against `http://127.0.0.1:<port>` and
   replays a JSONL scenario file step-by-step.
 - Each step is a `{ "step": "...", "do": { ... } }` or
-  `{ "step": "...", "assert": { ... } }` line; commands are registered
-  in `src/commands/` and assertions in `src/matchers.ts`.
-- Writes per-case `<name>.<browser>.json` reports + DOM dumps on failure.
+  `{ "step": "...", "assert": { ... } }` line; the `kind` field on `do`
+  picks a command from the registry.
+- Commands fall into two layers:
+  - **`src/commands/generic.ts`** — Playwright primitives (click, type,
+    pressKey, screenshot, …) that every consumer can use.
+  - **`--commands <path>`** — a consumer-supplied JS/TS module dynamically
+    imported at startup. Its default export is merged into the registry.
+- Writes per-case `<name>.<browser>.json` reports + DOM dumps on failure
+  to `--artifacts-dir`.
 
 ## Quick start
 
@@ -22,39 +28,64 @@ a web UI.
 npm install
 npx playwright install chromium
 
-# From your project's package.json scripts
-cd /path/to/ui-driver-web
-E2E_BACKEND_BIN="/path/to/your-project/server.js" \
-  npm run runner:chromium
+# From your project (replace the paths)
+npm --prefix /path/to/ui-driver-web run runner:chromium -- \
+  --backend-bin       "/path/to/your-project/server.js" \
+  --cases-root        "/path/to/your-project/test/scenarios" \
+  --commands          "/path/to/your-project/test/commands.ts" \
+  --fakecc-bin        "/path/to/your-project/test/fakecc.js" \
+  --fakecc-fixtures-dir "/path/to/your-project/test/fixtures" \
+  --fixture-map       "/path/to/your-project/test/fixtures.json" \
+  --artifacts-dir     "/path/to/your-project/test/artifacts"
 ```
 
 ## Configuration
 
-The runner deliberately knows nothing about a specific consumer. Tell it
-what to spawn and where to find cases.
+**All configuration is CLI-only**: env vars are not consulted, because env
+leaks into every child process and into `/proc/<pid>/environ` where any
+other process running as the same user can read it. CLI args only live on
+the one `/proc/<pid>/cmdline`.
 
-| Env / flag                | Purpose                                       |
-|---------------------------|-----------------------------------------------|
-| `E2E_BACKEND_BIN` / `--backend-bin` | Path to the backend script to spawn   |
-| `E2E_BACKEND_CMD`         | Command to invoke the bin with (default `node`) |
-| `E2E_BACKEND_PORT`        | Port the backend listens on (default 4100)    |
-| `E2E_LOG_LEVEL`           | `LOG_LEVEL` env passed to backend             |
-| `--cases-dir <dir>`       | Directory under `test/` holding `*.jsonl`     |
-| `--browser <name>`        | `chromium` or `firefox`                       |
-| `--cc-mode fake|real`     | FakeCC fixture mode (CodiDroid-specific)      |
+| Flag                          | Purpose                                       |
+|-------------------------------|-----------------------------------------------|
+| `--backend-bin <path>`        | Required. Backend executable to spawn         |
+| `--backend-cmd <cmd>`         | Command to invoke the bin (default `node`)    |
+| `--backend-port <n>`          | Port the backend listens on (default 4100)    |
+| `--backend-log-level <lvl>`   | `LOG_LEVEL` set on the backend's env (default `warn`) |
+| `--cases-root <abs path>`     | Required. Directory holding `*.jsonl` scenarios |
+| `--commands <path>`           | Consumer's app-specific commands module       |
+| `--cc-mode <fake\|real>`      | Default `fake`. `fake` requires `--fakecc-bin` |
+| `--fakecc-bin <path>`         | Required when `--cc-mode=fake`. Subprocess mock to launch |
+| `--fakecc-fixtures-dir <path>`| Base dir for fixture filenames in `--fixture-map` |
+| `--fixture-map <json path>`   | JSON `{ caseBasename: fixtureFilename }` map  |
+| `--artifacts-dir <abs path>`  | Where reports + DOM dumps land (default `./artifacts`) |
+| `--browser <name>`            | `chromium` or `firefox` (or both, comma-sep)  |
+| `--case <name>`               | Run just one case (basename, no `.jsonl`)     |
 
-## What's webui-specific
+## Consumer module shape (`--commands`)
 
-- `src/commands/vericod.ts` — Playwright commands that target CodiDroid's
-  selectors. Other consumers add their own command file under
-  `src/commands/`, register it in `src/commands/registry.ts`, and ignore
-  this one.
-- `test/cases/` and `test/cases-realcc/` — CodiDroid scenarios. Other
-  consumers either replace this directory or point `--cases-dir`
-  somewhere else.
-- `test/fakecc/` — CodiDroid's CC subprocess mock. Reusable as a pattern
-  for any project that mocks a long-running subprocess.
+Default-export an object whose keys are command names; values are
+`(page: Page, params: never) => Promise<unknown> | unknown` functions.
 
-Everything else (runner.ts, run-all.js, src/session.ts, src/replay.ts,
-src/matchers.ts, src/commands/{types,registry,generic}.ts, src/launcher.ts,
-src/server.ts, src/bin.ts) is consumer-agnostic.
+```ts
+// my-app/test/commands.ts
+import type { Page } from 'playwright';
+
+export default {
+  async myAction(page: Page, p: { text: string }) {
+    await page.fill('input.my-app-input', p.text);
+  },
+};
+```
+
+Then your scenarios can do `{ "kind": "myAction", "params": { "text": "x" } }`.
+
+## What ships with the driver
+
+| Stays in the driver                            | Comes from the consumer                |
+|------------------------------------------------|----------------------------------------|
+| `src/session.ts`, `src/replay.ts`              | scenarios (`*.jsonl`)                  |
+| `src/matchers.ts`, `src/launcher.ts`           | app-specific commands                  |
+| `src/commands/{types,registry,generic}.ts`     | subprocess mock + fixtures             |
+| `src/server.ts`, `src/bin.ts`                  | backend bin path                       |
+| `test/runner.ts`, `test/run-all.js`            | fixture map                            |

@@ -1,8 +1,0 @@
-{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Let me check the file."}]}}}
-{"delay_ms":5}
-{"emit":{"type":"assistant","message":{"content":[{"type":"tool_use","id":"toolu_1","name":"Read","input":{"path":"/tmp/foo"}}]}}}
-{"delay_ms":5}
-{"emit":{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"line1\nline2\n"}]}}}
-{"delay_ms":5}
-{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Found two lines."}]}}}
-{"emit":{"type":"result","subtype":"success","duration_ms":50,"usage":{"input_tokens":10,"output_tokens":12}}}

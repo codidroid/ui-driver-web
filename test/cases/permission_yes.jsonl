@@ -1,5 +1,0 @@
-{ "step": "send prompt",     "do":     { "kind": "sendPrompt",          "params": { "text": "run echo hi" } } }
-{ "step": "awaiting perm",   "assert": { "kind": "waitForTurn",         "params": { "status": "awaiting_permission" } } }
-{ "step": "shows action",    "assert": { "kind": "getText",             "params": { "selector": "[data-test=permission] h3" } }, "expect": { "contains": "Bash command" } }
-{ "step": "allow",           "do":     { "kind": "respondToPermission", "params": { "decision": "yes" } } }
-{ "step": "turn ends",       "assert": { "kind": "waitForTurn",         "params": { "status": "done" } } }
