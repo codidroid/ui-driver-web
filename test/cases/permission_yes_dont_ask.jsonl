@@ -1,0 +1,4 @@
+{ "step": "send prompt",     "do":     { "kind": "sendPrompt",          "params": { "text": "run echo hi" } } }
+{ "step": "awaiting perm",   "assert": { "kind": "waitForTurn",         "params": { "status": "awaiting_permission" } } }
+{ "step": "allow always",    "do":     { "kind": "respondToPermission", "params": { "decision": "yes_dont_ask" } } }
+{ "step": "turn ends",       "assert": { "kind": "waitForTurn",         "params": { "status": "done" } } }

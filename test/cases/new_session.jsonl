@@ -1,0 +1,3 @@
+{ "step": "new session with cwd", "do":     { "kind": "newSession",      "params": { "cwd": "/tmp" } } }
+{ "step": "send prompt",          "do":     { "kind": "sendPrompt",       "params": { "text": "hi" } } }
+{ "step": "got reply",            "assert": { "kind": "waitForTurn",      "params": { "status": "done" } } }

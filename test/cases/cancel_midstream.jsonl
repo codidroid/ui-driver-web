@@ -1,0 +1,4 @@
+{ "step": "send prompt",     "do":     { "kind": "sendPrompt",          "params": { "text": "long prompt" } } }
+{ "step": "wait streaming",  "assert": { "kind": "waitForTurn",         "params": { "status": "streaming" } } }
+{ "step": "cancel",          "do":     { "kind": "click",               "params": { "selector": "[data-test=cancel-turn]" } } }
+{ "step": "turn cancelled",  "assert": { "kind": "waitForTurn",         "params": { "status": "cancelled" } } }

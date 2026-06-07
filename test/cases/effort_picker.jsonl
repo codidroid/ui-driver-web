@@ -1,0 +1,3 @@
+{ "step": "switch effort","do":     { "kind": "setEffort",     "params": { "level": "high" } } }
+{ "step": "send prompt",  "do":     { "kind": "sendPrompt",    "params": { "text": "ping" } } }
+{ "step": "turn ends",    "assert": { "kind": "waitForTurn",   "params": { "status": "done" } } }

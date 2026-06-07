@@ -1,0 +1,6 @@
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Begin."}]}}}
+{"emit_malformed":"this is not json"}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Middle."}]}}}
+{"emit_malformed":"{broken"}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"End."}]}}}
+{"emit":{"type":"result","subtype":"success","duration_ms":20}}

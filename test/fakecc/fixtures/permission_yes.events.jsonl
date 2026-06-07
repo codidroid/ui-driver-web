@@ -1,0 +1,7 @@
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Need to run a command."}]}}}
+{"emit":{"type":"permission_request","request_id":"req_1","tool":"Bash","action":"Bash command","detail":"echo hi","options":[{"key":"yes","label":"Yes"},{"key":"yes_dont_ask","label":"Yes, and don't ask again for Bash commands in /tmp"},{"key":"no","label":"No, and tell Claude what to do differently"}]}}
+{"expect":{"type":"permission_response","request_id":"req_1","decision":"yes"}}
+{"emit":{"type":"assistant","message":{"content":[{"type":"tool_use","id":"toolu_b","name":"Bash","input":{"command":"echo hi"}}]}}}
+{"emit":{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"toolu_b","content":"hi\n"}]}}}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Done."}]}}}
+{"emit":{"type":"result","subtype":"success","duration_ms":20}}

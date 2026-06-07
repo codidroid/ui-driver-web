@@ -1,0 +1,6 @@
+// Real-claude smoke test. Content-agnostic — only verifies the round-trip
+// pipeline (prompt sent, turn finishes, some assistant text rendered).
+// Run via: npm run test:e2e:real
+{ "step": "send prompt",    "do":     { "kind": "sendPrompt",          "params": { "text": "Reply with exactly the word: ok" } } }
+{ "step": "turn ends",      "assert": { "kind": "waitForTurn",         "params": { "status": "done", "timeout_ms": 90000 } } }
+{ "step": "got reply",      "assert": { "kind": "expectAssistantText" }, "expect": { "regex": "\\S" } }

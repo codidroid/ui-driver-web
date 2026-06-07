@@ -1,0 +1,3 @@
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"hello there"}]}}}
+{"delay_ms":10}
+{"emit":{"type":"result","subtype":"success","duration_ms":42,"usage":{"input_tokens":3,"output_tokens":2}}}

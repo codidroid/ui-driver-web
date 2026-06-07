@@ -1,0 +1,2 @@
+{ "step": "send prompt",    "do":     { "kind": "sendPrompt",          "params": { "text": "read /tmp/x" } } }
+{ "step": "turn ends",      "assert": { "kind": "waitForTurn",         "params": { "status": "done" } } }

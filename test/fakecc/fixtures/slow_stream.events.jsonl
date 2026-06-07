@@ -1,0 +1,8 @@
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"thinking..."}]}}}
+{"delay_ms":1000}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":" still thinking..."}]}}}
+{"delay_ms":1000}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":" almost done..."}]}}}
+{"delay_ms":1000}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":" done."}]}}}
+{"emit":{"type":"result","subtype":"success","duration_ms":3000,"usage":{"input_tokens":2,"output_tokens":8}}}

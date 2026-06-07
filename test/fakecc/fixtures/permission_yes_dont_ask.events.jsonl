@@ -1,0 +1,4 @@
+{"emit":{"type":"permission_request","request_id":"req_3","tool":"Bash","action":"Bash command","detail":"echo hi","options":[{"key":"yes","label":"Yes"},{"key":"yes_dont_ask","label":"Yes, and don't ask again for Bash commands in /tmp"},{"key":"no","label":"No, and tell Claude what to do differently"}]}}
+{"expect":{"type":"permission_response","decision":"yes_dont_ask"}}
+{"emit":{"type":"assistant","message":{"content":[{"type":"text","text":"Allowed; running."}]}}}
+{"emit":{"type":"result","subtype":"success","duration_ms":15}}
